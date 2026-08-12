@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import type {
   ArchitectureBlueprint,
   ViewMode,
+  WorkspaceMode,
 } from "@/types/architecture";
 import { ArchitectureCanvas } from "./ArchitectureCanvas";
 import { DetailsDrawer } from "./DetailsDrawer";
@@ -28,6 +29,7 @@ const PLAYBACK_INTERVAL_MS = 1500;
 export function SystemDesignerShell({ initialBlueprint }: Props) {
   const [blueprint, setBlueprint] = useState<ArchitectureBlueprint>(initialBlueprint);
   const [viewMode, setViewMode] = useState<ViewMode>("HLD");
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("design");
   const [stepIndex, setStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -101,6 +103,30 @@ export function SystemDesignerShell({ initialBlueprint }: Props) {
     generate(next, aiConfig);
   }, [generate, aiConfig]);
 
+  const handleChangeWorkspaceMode = useCallback((nextMode: WorkspaceMode) => {
+    setWorkspaceMode(nextMode);
+
+    if (nextMode === "analyze") {
+      setAnalysisOpen(true);
+      setHistoryOpen(false);
+      setSelectedNodeId(null);
+      return;
+    }
+
+    if (nextMode === "library") {
+      setHistoryOpen(true);
+      setAnalysisOpen(false);
+      setSelectedNodeId(null);
+      return;
+    }
+
+    if (nextMode === "share" || nextMode === "design") {
+      setHistoryOpen(false);
+      setAnalysisOpen(false);
+      return;
+    }
+  }, []);
+
   const handleSelectHistory = useCallback((entry: import("@/hooks/useLocalHistory").HistoryEntry) => {
     setBlueprint(entry.blueprint);
     setStepIndex(0);
@@ -165,6 +191,9 @@ export function SystemDesignerShell({ initialBlueprint }: Props) {
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden bg-[#070b11] text-white">
         <PromptToolbar
+          key={blueprint.id}
+          workspaceMode={workspaceMode}
+          onChangeWorkspaceMode={handleChangeWorkspaceMode}
         prompt={blueprint.prompt}
         onSubmitPrompt={handleSubmitPrompt}
         viewMode={viewMode}
@@ -182,21 +211,24 @@ export function SystemDesignerShell({ initialBlueprint }: Props) {
           if (!analysisOpen) {
             setSelectedNodeId(null);
             setHistoryOpen(false);
+            setWorkspaceMode("analyze");
+          } else {
+            setWorkspaceMode("design");
           }
         }}
         hasAnalysisData={hasAnalysisData}
         history={history}
-        onSelectHistory={(entry) => {
-          handleSelectHistory(entry);
-          setHistoryOpen(false);
-          setAnalysisOpen(true);
-        }}
         onExport={handleExport}
         onShare={handleShare}
         historyOpen={historyOpen}
         onToggleHistory={() => {
           setHistoryOpen((o) => !o);
-          if (!historyOpen) setAnalysisOpen(false);
+          if (!historyOpen) {
+            setAnalysisOpen(false);
+            setWorkspaceMode("library");
+          } else {
+            setWorkspaceMode("design");
+          }
         }}
       />
 
@@ -219,6 +251,11 @@ export function SystemDesignerShell({ initialBlueprint }: Props) {
             {isLoading && <LoadingOverlay />}
           </div>
           <ModeBadge viewMode={viewMode} />
+          <CanvasControlDock
+            isPlaying={isPlaying}
+            onTogglePlay={handleTogglePlay}
+            onFitView={() => setFitSignal((n) => n + 1)}
+          />
         </main>
         <DetailsDrawer
           open={drawerOpen}
@@ -268,6 +305,34 @@ export function SystemDesignerShell({ initialBlueprint }: Props) {
           {copyToast}
         </div>
       )}
+    </div>
+  );
+}
+
+function CanvasControlDock({
+  isPlaying,
+  onTogglePlay,
+  onFitView,
+}: {
+  isPlaying: boolean;
+  onTogglePlay: () => void;
+  onFitView: () => void;
+}) {
+  return (
+    <div className="pointer-events-auto absolute left-4 top-24 z-10 flex items-center gap-2 rounded-md border border-white/10 bg-[#0a0f17]/85 px-2 py-1.5 backdrop-blur">
+      <button
+        onClick={onTogglePlay}
+        className="flex h-8 items-center gap-1 rounded-md border border-white/10 bg-white/3 px-2.5 text-[11px] text-white/80 transition-colors hover:border-white/20 hover:text-white"
+      >
+        <span className={isPlaying ? "text-rose-300" : "text-emerald-300"}>{isPlaying ? "❚❚" : "▶"}</span>
+        {isPlaying ? "Pause" : "Play"}
+      </button>
+      <button
+        onClick={onFitView}
+        className="h-8 rounded-md border border-white/10 bg-white/3 px-2.5 text-[11px] text-white/80 transition-colors hover:border-white/20 hover:text-white"
+      >
+        Fit
+      </button>
     </div>
   );
 }

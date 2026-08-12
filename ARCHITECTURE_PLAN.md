@@ -33,6 +33,118 @@
 | No caching | Every identical prompt re-calls LLM ($$$) |
 | No rate limiting on `/api/generate` | Open to abuse |
 
+### 1.1 Deep analysis: what SystemDesigner needs in the 2026 developer world
+
+This section translates current market expectations for developer tools into concrete product requirements for SystemDesigner. The focus is on practical utility, daily workflow integration, trust, and team adoption.
+
+#### A. Product expectations benchmark (2026)
+
+Modern developers expect architecture tools to provide:
+
+1. Fast time-to-first-value (under 10 seconds for a useful draft)
+2. High output reliability (structured, explainable, reproducible)
+3. Team collaboration (share, review, version, compare)
+4. Governance support (security, cost, SLOs, compliance)
+5. Workflow integration (GitHub, Jira, Slack, docs, CI)
+6. Learning and guidance (tradeoffs, alternatives, interview framing)
+
+Current app strengths are in visualization and UX. The largest missing value is decision support and lifecycle integration.
+
+#### B. Feature map by strategic value
+
+| Domain | Why it matters now | Recommended features | Priority | Expected impact |
+|---|---|---|---|---|
+| Generation quality and trust | AI output quality is now the main differentiator | Multi-candidate generation, confidence scoring by section, deterministic seed mode, citation-backed recommendations | P0 | Higher user trust, fewer regenerations |
+| Architecture correctness | Teams need realistic, production-grade outputs | Constraint-aware generation (scale, region, budget, latency), anti-pattern detector, resilience checklist | P0 | Better technical quality and fewer design blind spots |
+| Developer workflow integration | Standalone tools have low daily retention | Export to Markdown/Mermaid/JSON, GitHub PR comment export, copy as ADR draft, Jira ticket seed | P0 | Higher adoption in real team workflows |
+| Collaboration and review | Design is a team activity | Shared sessions, comments on nodes, diff between versions, reviewer mode | P1 | Improved team alignment and faster review cycles |
+| Cost and operations intelligence | Architecture without cost/SLO is incomplete | Cost estimator per component, SLO/error-budget hints, scaling triggers, observability blueprint templates | P1 | More deployable and realistic designs |
+| Security and compliance | Enterprise usage requires guardrails | Threat model starter, PII data-flow tagging, authN/authZ checks, audit log for design decisions | P1 | Enterprise readiness and reduced risk |
+| Personalization | Generic output feels low value | User presets by domain (fintech, realtime, analytics), preferred stack profiles, saved constraints | P2 | Faster setup and better relevance |
+| Ecosystem extensibility | Long-term platform growth | Plugin surface for custom analyzers, provider adapters, organization templates | P2 | Community growth and stickiness |
+
+#### C. Priority roadmap focused on utility
+
+##### P0: Must-have upgrades (next 4-6 weeks)
+
+| Feature | User problem solved | Implementation notes | Success metric |
+|---|---|---|---|
+| Constraint-aware prompt input | Users cannot force outputs to match reality | Add prompt controls for throughput, latency target, region, budget, compliance, team size | 70% sessions use at least one constraint |
+| Multi-candidate output (3 variants) | Single output is brittle and hard to trust | Generate 3 design variants: cost-optimized, balanced, reliability-first | 40% users compare variants before finalizing |
+| Architecture quality checks | Users miss hidden risks | Add analyzer pass: SPOF, missing cache invalidation, missing idempotency, weak observability | 30% reduction in manual risk findings |
+| One-click artifact exports | Output is hard to reuse in work tools | Export ADR draft, Mermaid, sequence flow, risk register, implementation checklist | 50% sessions trigger export |
+| Regeneration controls | Users need iterative refinement | Regenerate by section: only HLD, only RCA, only solutions, only scaling | 25% lower full-regenerate requests |
+
+##### P1: High-leverage improvements (6-12 weeks)
+
+| Feature | User problem solved | Implementation notes | Success metric |
+|---|---|---|---|
+| Team review mode | Hard to review architecture asynchronously | Add shared URL mode, comment pins on nodes/edges, approve/request-changes workflow | 30% of designs reviewed by 2+ contributors |
+| Version diff engine | Teams cannot quickly compare design iterations | Visual diff for nodes, edges, risks, cost, SLO assumptions | Median review time drops by 20% |
+| Cost and SLO lens | Diagrams lack operational realism | Component-level monthly cost rough estimates + latency budgets + SLO targets | 60% designs include cost and SLO fields |
+| Reference architecture library | Repeated prompts recreate common systems | Add curated templates: chat, payments, streaming, search, eventing | 35% sessions start from template |
+| Workflow connectors | Manual copy-paste overhead | GitHub issue/PR integration, Jira ticket creation, Slack summary posting | 40% less manual transfer effort |
+
+##### P2: Strategic differentiation (12+ weeks)
+
+| Feature | User problem solved | Implementation notes | Success metric |
+|---|---|---|---|
+| Architecture simulation mode | Static diagrams hide behavior under failure | Simulate traffic spikes, region loss, dependency outage, queue backlog | 20% increase in advanced-session time |
+| Policy-as-code validation | Enterprises need enforceable standards | Rule engine for org policies (approved datastores, encryption, region boundaries) | 80% policy violation detection before export |
+| Organizational memory graph | Decisions get lost over time | Link design outputs to incidents, postmortems, ADR history | Faster root-cause alignment in design reviews |
+| Plugin ecosystem | Teams need custom domain logic | Public plugin API for analyzers and custom node packs | Ecosystem adoption by partner teams |
+
+#### D. Recommended information architecture upgrades
+
+To make the app significantly more useful, add three core lenses beyond current canvas output:
+
+1. Decision Lens: tradeoffs, assumptions, alternatives, confidence, unresolved questions
+2. Delivery Lens: implementation plan, milestones, dependencies, team ownership mapping
+3. Operability Lens: SLI/SLO map, runbook starters, alert strategy, failure blast-radius view
+
+These can be implemented as additional tabs in `AnalysisPanel` and optional export sections.
+
+#### E. Suggested data model extensions
+
+Additive fields for `ArchitectureBlueprint` to support modern requirements:
+
+- `assumptions: string[]`
+- `alternatives: { option: string; pros: string[]; cons: string[]; whenToChoose: string }[]`
+- `decisionLog: { decision: string; rationale: string; impact: "high" | "medium" | "low" }[]`
+- `nonFunctionalTargets: { latencyP95Ms?: number; availabilitySLO?: string; throughputRps?: number; rto?: string; rpo?: string }`
+- `costEstimate: { monthlyUsdRange: string; majorDrivers: string[]; optimizationIdeas: string[] }`
+- `securityNotes: { threat: string; mitigation: string; residualRisk: string }[]`
+- `operabilityPlan: { sli: string; target: string; alertHint: string }[]`
+- `implementationPlan: { phase: string; tasks: string[]; risks: string[] }[]`
+
+These fields keep the app useful across design, planning, and review workflows.
+
+#### F. KPI framework to validate improvement impact
+
+Track product value with measurable metrics:
+
+| KPI | Why it matters | Target |
+|---|---|---|
+| Time to first useful architecture | Measures onboarding quality | <= 10s median |
+| Regeneration rate per session | Proxy for output quality | <= 1.8 |
+| Export rate | Measures practical utility | >= 50% |
+| Share/review rate | Measures collaboration fit | >= 35% |
+| Architecture acceptance score | User trust signal (1-5) | >= 4.2 |
+| Return usage within 7 days | Retention and habit formation | >= 30% |
+
+#### G. Implementation sequence with existing codebase
+
+The most efficient sequence, based on current structure (`app/api/generate`, `hooks/useGenerateBlueprint`, `components/system-designer/*`):
+
+1. Extend schema and prompt contracts for assumptions, alternatives, NFR targets, and cost/security notes
+2. Add new `AnalysisPanel` tabs for Decision, Operability, and Delivery
+3. Add multi-candidate generation and per-section regeneration controls in toolbar
+4. Introduce export pipelines (ADR Markdown, Mermaid pack, checklist JSON)
+5. Add review/diff model and share session metadata
+6. Add connectors (GitHub, Jira, Slack) and policy validation layer
+
+This sequence maximizes user-visible value early while preserving architecture flexibility for advanced capabilities.
+
 ---
 
 ## 2. Target Architecture

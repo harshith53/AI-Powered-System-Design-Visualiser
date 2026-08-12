@@ -18,6 +18,7 @@ An intelligent web application that leverages AI to generate comprehensive syste
 
 - [Quick Start](#-quick-start)
 - [Features](#-features)
+- [Visual Design](#-visual-design) - ✨ **[See DESIGN.md](./DESIGN.md)**
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Installation](#-installation)
@@ -89,6 +90,37 @@ npm start
 - 🔍 **Schema Validation**: Zod-based with resilience mapping for AI responses
 - 📐 **Type-Safe**: Full TypeScript coverage with zero type errors
 - 🧪 **Error Boundaries**: React error boundary with recovery UI
+
+---
+
+## ✨ Visual Design
+
+> **Masterclass in Modern UI/UX Design** 🎨
+
+This application is built with **10 core design principles** that developers can learn from and be inspired by.
+
+**Highlights**:
+- Interactive 3D canvas with 60 FPS smooth interactions
+- Glassmorphism & depth with backdrop blur effects
+- Microinteractions with Framer Motion animations
+- Dark mode with WCAG AA+ contrast ratios
+- ChatGPT-style responsive sidebar
+- Animation timeline like video editors
+- Color psychology with intentional palette
+- Typography hierarchy for scan-ability
+- Accessible tabs with keyboard navigation
+- Modern dark/light mode switching
+
+**➡️ [See full DESIGN.md for complete visual philosophy, code patterns, and developer inspiration!](./DESIGN.md)**
+
+**Includes**:
+- 10 core design principles with code examples
+- Visual enhancements roadmap (3 phases)
+- Stack recommendations for visual excellence
+- 10 UI/UX patterns to steal
+- Reference sources (Figma, Linear, Framer, etc.)
+- Reusable component code patterns
+- Performance & accessibility best practices
 
 ---
 
@@ -290,52 +322,29 @@ npm start
 
 ## 📸 Screenshots
 
-### Screenshot 1: Main Interface with HLD View
-```
-[Placeholder: Main app showing 3D graph canvas]
-- Top toolbar with prompt input
-- Central 3D graph visualization
-- Timeline at bottom
-- Right sidebar with toggles
-```
+### Design 1: Main Interface + Architecture Canvas
 
-### Screenshot 2: Analysis Panel - Root Causes & Solutions
-```
-[Placeholder: Analysis tab showing]
-- Tab navigation
-- Root causes with probability badges
-- Solutions with effort indicators
-- Color-coded severity
-```
+![System Designer - Design 1](./public/image/Design_1.png)
 
-### Screenshot 3: Configuration Panel
-```
-[Placeholder: Settings showing]
-- Provider selector
-- API key input
-- Model selector
-- Base URL field
-- Presets
-- Test button
-```
+- Prompt toolbar and primary generation controls
+- Interactive architecture visualization on canvas
+- Strong visual hierarchy for rapid understanding
 
-### Screenshot 4: History & Sharing
-```
-[Placeholder: Sidebar showing]
-- History entries by time
-- Delete buttons
-- Clear all option
-- Share URL dialog
-```
+### Design 2: Analysis + Insights Experience
 
-### Screenshot 5: LLD with Mermaid Diagram
-```
-[Placeholder: Low-level view]
-- Detailed breakdown
-- Mermaid flowchart
-- Protocol flows
-- Component interactions
-```
+![System Designer - Design 2](./public/image/Design_2.png)
+
+- Multi-panel analysis workflow
+- Root-cause and solution-focused insights
+- Clear information density with modern readability
+
+### Design 3: Deep-Dive System Breakdown
+
+![System Designer - Design 3](./public/image/Design_3.png)
+
+- Low-level component mapping and flow clarity
+- Interview-ready architecture storytelling
+- End-to-end system reasoning at a glance
 
 ---
 
@@ -782,16 +791,6 @@ Have an idea? **[VOTE NOW](https://github.com/harshith53/system-design-app/discu
 - 💳 Fintech transaction flow builder
 - 📞 3-way call optimization (telephony)
 
----
-
-### ⭐ **Want Early Access?**
-
-```
-1. Star this repo ⭐
-2. Watch for updates 👀
-3. Join our Discord (coming soon!)
-4. Share feedback & ideas
-```
 
 ---
 ## �💬 Support

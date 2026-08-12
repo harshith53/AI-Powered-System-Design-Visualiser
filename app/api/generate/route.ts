@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { buildPrompt } from "@/lib/ai/prompt";
 import { getProvider } from "@/lib/ai/client";
@@ -27,6 +28,12 @@ function errorResponse(
 }
 
 export async function POST(req: NextRequest) {
+  // ── 0. Require auth ───────────────────────────────────────────────────────
+  const { userId } = await auth();
+  if (!userId) {
+    return errorResponse("Unauthorized", "UNAUTHORIZED", 401);
+  }
+
   // ── 1. Validate Content-Type ──────────────────────────────────────────────
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {

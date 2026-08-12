@@ -1,5 +1,7 @@
 export type ViewMode = "HLD" | "LLD";
 
+export type WorkspaceMode = "design" | "analyze" | "library" | "share";
+
 export type NodeType =
   | "client"
   | "edge"

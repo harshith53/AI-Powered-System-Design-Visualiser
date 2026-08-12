@@ -26,6 +26,211 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.mkt-shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.2), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.18), transparent 45%),
+    radial-gradient(circle at 60% 80%, rgba(14, 165, 233, 0.12), transparent 40%),
+    #070b11;
+}
+
+.mkt-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at center, black 35%, transparent 90%);
+}
+
+.mkt-float {
+  animation: mkt-float 8s ease-in-out infinite;
+}
+
+.mkt-scan {
+  overflow: hidden;
+}
+
+.mkt-scan::before {
+  content: "";
+  position: absolute;
+  inset: -100% 0;
+  background: linear-gradient(
+    180deg,
+    rgba(56, 189, 248, 0) 0%,
+    rgba(56, 189, 248, 0.14) 48%,
+    rgba(56, 189, 248, 0) 100%
+  );
+  animation: mkt-scan 5.5s linear infinite;
+}
+
+.mkt-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: mkt-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.mkt-flow-link-x,
+.mkt-flow-link-y {
+  overflow: hidden;
+  background: rgba(56, 189, 248, 0.28);
+}
+
+.mkt-flow-link-x::before,
+.mkt-flow-link-y::before {
+  content: "";
+  position: absolute;
+  background: rgba(103, 232, 249, 0.95);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.75);
+}
+
+.mkt-flow-link-x::before {
+  top: 0;
+  left: -28%;
+  height: 100%;
+  width: 28%;
+  animation: mkt-flow-x 2.4s linear infinite;
+}
+
+.mkt-flow-link-y::before {
+  left: 0;
+  top: -28%;
+  width: 100%;
+  height: 28%;
+  animation: mkt-flow-y 2.4s linear infinite;
+}
+
+.mkt-arch-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 76% 20%, rgba(56, 189, 248, 0.12), transparent 35%);
+}
+
+.mkt-arch-node {
+  position: relative;
+  animation: mkt-arch-node-breathe 3.4s ease-in-out infinite;
+}
+
+.mkt-arch-node::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.9);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+  animation: mkt-arch-beacon 1.9s ease-in-out infinite;
+}
+
+.mkt-arch-link-v,
+.mkt-arch-link-h {
+  overflow: hidden;
+  background: rgba(56, 189, 248, 0.25);
+}
+
+.mkt-arch-link-v::before,
+.mkt-arch-link-h::before {
+  content: "";
+  position: absolute;
+  background: rgba(167, 243, 208, 0.95);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+}
+
+.mkt-arch-link-v::before {
+  left: 0;
+  top: -32%;
+  width: 100%;
+  height: 32%;
+  animation: mkt-arch-flow-y 1.8s linear infinite;
+}
+
+.mkt-arch-link-h::before {
+  top: 0;
+  left: -24%;
+  height: 100%;
+  width: 24%;
+  animation: mkt-arch-flow-x 1.8s linear infinite;
+}
+
+@keyframes mkt-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes mkt-scan {
+  from {
+    transform: translateY(-60%);
+  }
+  to {
+    transform: translateY(60%);
+  }
+}
+
+@keyframes mkt-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mkt-flow-x {
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes mkt-flow-y {
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes mkt-arch-flow-x {
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes mkt-arch-flow-y {
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes mkt-arch-beacon {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes mkt-arch-node-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+    border-color: rgba(125, 211, 252, 0.22);
+  }
+  50% {
+    transform: translateY(-1px);
+    border-color: rgba(125, 211, 252, 0.38);
+  }
+}
+
 /* React Flow dark-theme polish */
 .react-flow {
   background: transparent;
