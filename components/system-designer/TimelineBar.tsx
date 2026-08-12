@@ -40,12 +40,12 @@ export function TimelineBar({
                 key={s.id}
                 onClick={() => onSelect(i)}
                 className={[
-                  "group relative flex min-w-[148px] flex-1 flex-col items-start gap-1 rounded-md border px-3 py-2 text-left transition-colors",
+                  "group relative flex min-w-37 flex-1 flex-col items-start gap-1 rounded-md border px-3 py-2 text-left transition-colors",
                   active
                     ? "border-sky-400/60 bg-sky-400/10"
                     : past
-                      ? "border-white/10 bg-white/[0.02] hover:border-white/20"
-                      : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.02]",
+                      ? "border-white/10 bg-white/2 hover:border-white/20"
+                      : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/2",
                 ].join(" ")}
               >
                 <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function TimelineBar({
                 {active ? (
                   <motion.div
                     layoutId="step-underline"
-                    className="absolute inset-x-0 -bottom-[1px] h-[2px] rounded-full bg-sky-400/80"
+                    className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-sky-400/80"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 ) : null}

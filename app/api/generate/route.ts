@@ -7,6 +7,7 @@ import { BlueprintSchema } from "@/lib/ai/schema";
 import { getCached, setCached, cacheKey } from "@/lib/ai/cache";
 import type { ArchitectureBlueprint } from "@/types/architecture";
 import type { AIConfig } from "@/types/ai-config";
+import { persistGeneratedBlueprint } from "@/lib/db/persistence";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -28,8 +29,17 @@ function errorResponse(
 }
 
 export async function POST(req: NextRequest) {
+  const startedAt = Date.now();
+
   // ── 0. Require auth ───────────────────────────────────────────────────────
-  const { userId } = await auth();
+  const { userId: authUserId } = await auth();
+  const devBypassHeader = req.headers.get("x-dev-auth-bypass") === "true";
+  const allowDevHeaderBypass = process.env.NODE_ENV !== "production" && devBypassHeader;
+  const allowDevAuthBypass =
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEV_BYPASS_GENERATE_AUTH === "true";
+  const userId = authUserId ?? (allowDevAuthBypass || allowDevHeaderBypass ? "dev-local-user" : null);
+
   if (!userId) {
     return errorResponse("Unauthorized", "UNAUTHORIZED", 401);
   }
@@ -68,14 +78,14 @@ export async function POST(req: NextRequest) {
 
   // ── 3. Rate limit ─────────────────────────────────────────────────────────
   const ip = getClientIP(req);
-  const { allowed, retryAfterMs } = checkRateLimit(ip);
+  const { allowed, retryAfterMs } = await checkRateLimit(ip);
   if (!allowed) {
     return errorResponse("Rate limit exceeded", "RATE_LIMITED", 429, { retryAfterMs });
   }
 
   // ── 4. Cache lookup ───────────────────────────────────────────────────────
   const key = cacheKey(problem);
-  const cached = getCached(key);
+  const cached = await getCached(key);
   if (cached) {
     return NextResponse.json(
       { blueprint: cached },
@@ -166,7 +176,23 @@ Re-read the schema carefully and fix only those fields. Return the complete corr
 
   // ── 8. Attach prompt + cache + return ─────────────────────────────────────
   const blueprint: ArchitectureBlueprint = { ...result.data, prompt: problem } as unknown as ArchitectureBlueprint;
-  setCached(key, blueprint);
+  await setCached(key, blueprint);
+
+  // Best-effort persistence (Phase B). Do not fail generation response if DB write fails.
+  try {
+    await persistGeneratedBlueprint({
+      clerkUserId: userId,
+      prompt: problem,
+      blueprint,
+      provider: process.env.AI_PROVIDER ?? "openai",
+      model: (aiConfig?.model || process.env.OPENAI_MODEL || "").trim() || undefined,
+      latencyMs: Date.now() - startedAt,
+      cacheHit: false,
+      status: "success",
+    });
+  } catch (persistErr) {
+    console.warn("[generate] persistence skipped:", persistErr);
+  }
 
   return NextResponse.json(
     { blueprint },

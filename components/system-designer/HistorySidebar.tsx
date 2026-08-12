@@ -90,7 +90,7 @@ export function HistorySidebar({
               </div>
               <button
                 onClick={onClose}
-                className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-white/[0.03] text-white/50 transition-colors hover:border-white/20 hover:text-white"
+                className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-white/3 text-white/50 transition-colors hover:border-white/20 hover:text-white"
               >
                 ✕
               </button>
@@ -121,8 +121,8 @@ export function HistorySidebar({
                           className={[
                             "group relative mx-2 mb-0.5 rounded-lg transition-colors",
                             isActive
-                              ? "bg-white/[0.08]"
-                              : "hover:bg-white/[0.05]",
+                              ? "bg-white/8"
+                              : "hover:bg-white/5",
                           ].join(" ")}
                         >
                           <button
@@ -171,13 +171,13 @@ export function HistorySidebar({
 
             {/* Footer */}
             {history.length > 0 && (
-              <div className="shrink-0 border-t border-white/[0.06] px-4 py-3">
+              <div className="shrink-0 border-t border-white/6 px-4 py-3">
                 <button
                   onClick={() => {
                     onClearAll();
                     onClose();
                   }}
-                  className="w-full rounded-md border border-white/[0.06] bg-white/[0.02] py-1.5 text-[11px] font-medium text-white/35 transition-colors hover:border-rose-400/20 hover:bg-rose-400/[0.04] hover:text-rose-400/70"
+                  className="w-full rounded-md border border-white/6 bg-white/2 py-1.5 text-[11px] font-medium text-white/35 transition-colors hover:border-rose-400/20 hover:bg-rose-400/4 hover:text-rose-400/70"
                 >
                   Clear all history
                 </button>

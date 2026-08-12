@@ -10,7 +10,7 @@ An intelligent web application that leverages AI to generate comprehensive syste
 [![React](https://img.shields.io/badge/React-19-cyan)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-blue)](https://tailwindcss.com/)
 
-**Status**: Production Ready ✅ | **Version**: 0.1.0 | **Last Updated**: July 7, 2026
+**Status**: Production Ready ✅ | **Version**: 0.1.0 | **Last Updated**: August 12, 2026
 
 ---
 
@@ -85,8 +85,10 @@ npm start
 - 🔐 **Secure**: API keys stored locally, never sent to servers
 
 ### Developer Features
-- ⚡ **LRU Caching**: 1-hour TTL, 100-entry in-memory cache with LRU eviction
-- 🛡️ **Rate Limiting**: Token bucket algorithm (10 req/min per IP, 100 global)
+- ⚡ **Hybrid Caching**: Upstash Redis cache with resilient in-memory fallback
+- 🛡️ **Rate Limiting**: Distributed Upstash sliding window with local fallback safety
+- 🗄️ **Neon Persistence**: Generated blueprints, versions, and request logs persisted in Postgres
+- 🔐 **Route Auth Controls**: Clerk-based user auth for generation endpoint
 - 🔍 **Schema Validation**: Zod-based with resilience mapping for AI responses
 - 📐 **Type-Safe**: Full TypeScript coverage with zero type errors
 - 🧪 **Error Boundaries**: React error boundary with recovery UI
@@ -132,17 +134,22 @@ This application is built with **10 core design principles** that developers can
 graph LR
     User["User<br/>Browser"]
     Frontend["Frontend<br/>React App"]
+   Auth["Auth<br/>Clerk"]
     API["Backend API<br/>Next.js"]
     LLM["LLM<br/>OpenAI/Ollama"]
-    Cache["Cache<br/>In-Memory LRU"]
+   Cache["Cache<br/>Upstash Redis"]
+   DB["Database<br/>Neon Postgres"]
     
     User -->|Problem| Frontend
+   Frontend -->|Session| Auth
     Frontend -->|Request| API
+   API -->|Verify User| Auth
     API -->|Check| Cache
     Cache -->|Hit/Miss| API
     API -->|If Miss| LLM
     LLM -->|Response| API
     API -->|Store| Cache
+   API -->|Persist| DB
     API -->|Blueprint| Frontend
     Frontend -->|Display| User
 ```
@@ -202,22 +209,27 @@ graph TD
 ```mermaid
 graph LR
     REQ["Request<br/>{ problem }"]
+   AUTH["Auth Check"]
     VAL["Validate"]
     RATE["Rate Check"]
     CACHE["Cache Lookup"]
     LLM["Call LLM"]
     PARSE["Parse"]
+   PERSIST["Persist to Neon"]
     STORE["Store Cache"]
     RESP["Response<br/>{ blueprint }"]
     
-    REQ --> VAL
+   REQ --> AUTH
+   AUTH --> VAL
     VAL --> RATE
     RATE --> CACHE
-    CACHE -->|Hit| STORE
+   CACHE -->|Hit| RESP
     CACHE -->|Miss| LLM
     LLM --> PARSE
+   PARSE --> PERSIST
     PARSE --> STORE
-    STORE --> RESP
+   PERSIST --> RESP
+   STORE --> RESP
 ```
 
 ---
@@ -235,6 +247,9 @@ graph LR
 | **Mermaid** | 11.16.0 | Diagrams |
 | **Zod** | 4.4.3 | Validation |
 | **OpenAI SDK** | 6.45.0 | LLM integration |
+| **Clerk** | 7.x | Authentication and session management |
+| **pg** | 8.x | Neon PostgreSQL access |
+| **Upstash Redis** | 1.x | Distributed cache and rate limiting |
 
 ---
 
@@ -256,17 +271,31 @@ cd system-design-app
 # 2. Install dependencies
 npm install
 
-# 3. Create .env.local (optional)
-echo "# OPENAI_API_KEY=sk-..." > .env.local
+# 3. Create env file
+cp .env.example .env.local
 
-# 4. Run development server
+# 4. Fill required keys in .env.local
+# OPENAI_API_KEY=
+# NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+# CLERK_SECRET_KEY=
+# DATABASE_URL=
+# DATABASE_URL_DIRECT=
+# UPSTASH_REDIS_REST_URL=
+# UPSTASH_REDIS_REST_TOKEN=
+
+# 5. Run development server
 npm run dev
 # Open http://localhost:3000
 
-# 5. Production build
+# 6. Production build
 npm run build
 npm start
 ```
+
+### Setup References
+
+- [NEON_UPSTASH_SETUP.md](./NEON_UPSTASH_SETUP.md)
+- [DATABASE_ARCHITECTURE_PLAN.md](./DATABASE_ARCHITECTURE_PLAN.md)
 
 ---
 
@@ -322,6 +351,14 @@ npm start
 
 ## 📸 Screenshots
 
+### Product Gallery
+
+| Design 1 | Design 2 | Design 3 |
+|---|---|---|
+| [![Design 1](./public/image/Design_1.png)](./public/image/Design_1.png) | [![Design 2](./public/image/Design_2.png)](./public/image/Design_2.png) | [![Design 3](./public/image/Design_3.png)](./public/image/Design_3.png) |
+
+Click any image to open the full-size version.
+
 ### Design 1: Main Interface + Architecture Canvas
 
 ![System Designer - Design 1](./public/image/Design_1.png)
@@ -352,10 +389,16 @@ npm start
 
 ### POST `/api/generate`
 
+Authentication:
+- Requires an authenticated Clerk user.
+- For local development only, you can use `x-dev-auth-bypass: true` or `DEV_BYPASS_GENERATE_AUTH=true`.
+- Never enable bypass behavior in production.
+
 **Request**:
 ```typescript
 POST /api/generate
 Content-Type: application/json
+Authorization: Bearer <clerk_token> // recommended for API testing
 
 {
   "problem": "Design URL shortener with 10K QPS",
@@ -397,6 +440,7 @@ Content-Type: application/json
 | Code | Meaning |
 |------|---------|
 | 200 | Success |
+| 401 | Unauthorized |
 | 400 | Invalid input |
 | 429 | Rate limited |
 | 500 | Config/validation error |
@@ -410,8 +454,10 @@ Content-Type: application/json
 
 ## 🔐 Security
 
-- ✅ API keys stored **only** in browser localStorage
-- ✅ Never logged or stored on servers
+- ✅ Server-side secrets managed through environment variables
+- ✅ Clerk authentication required for protected generation routes
+- ✅ Optional local-only dev bypass for API testing (disabled in production)
+- ✅ Sensitive persistence in Neon with durable audit trail via `generation_request`
 - ✅ Input validation & sanitization
 - ✅ Rate limiting against abuse
 - ✅ Error messages don't leak data
@@ -645,6 +691,15 @@ Solution:
 ```
 
 ### Rate limit exceeded
+```
+
+### Unauthorized (`/api/generate`)
+```
+Solution:
+1. Ensure you're signed in with Clerk on the same app host/port
+2. For API testing, send Authorization: Bearer <token>
+3. Local-only fallback: x-dev-auth-bypass: true
+4. Confirm DEV_BYPASS_GENERATE_AUTH is false in production
 ```
 Solution:
 1. Wait 6+ seconds
